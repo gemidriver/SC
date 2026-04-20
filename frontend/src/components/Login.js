@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../api';
 import './Login.css';
 
 export default function Login({ onLogin }) {
@@ -16,11 +17,10 @@ export default function Login({ onLogin }) {
     const endpoint = mode === 'login' ? '/api/login' : '/api/register';
 
     try {
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim(), password }),
-        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) {

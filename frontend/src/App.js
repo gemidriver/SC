@@ -4,6 +4,7 @@ import TeamPanel from './components/TeamPanel';
 import PlayerModal from './components/PlayerModal';
 import Header from './components/Header';
 import Login from './components/Login';
+import { apiFetch } from './api';
 import './App.css';
 
 const BUDGET = 6000000;
@@ -80,7 +81,7 @@ export default function App() {
 
   // Check if already logged in
   useEffect(() => {
-    fetch('/api/me', { credentials: 'include' })
+    apiFetch('/api/me')
       .then(r => r.json())
       .then(data => {
         setUser(data.user || null);
@@ -92,7 +93,7 @@ export default function App() {
   // Load players + restore saved team after login
   useEffect(() => {
     if (!user) return;
-    fetch('/api/players', { credentials: 'include' })
+    apiFetch('/api/players')
       .then(r => {
         if (!r.ok) throw new Error(`Server error: ${r.status}`);
         return r.json();
@@ -102,7 +103,7 @@ export default function App() {
         setPlayers(list);
         setLoading(false);
         // Restore saved team
-        return fetch('/api/my-team', { credentials: 'include' });
+        return apiFetch('/api/my-team');
       })
       .then(r => r && r.json())
       .then(data => {
@@ -227,7 +228,7 @@ export default function App() {
   }, []);
 
   const handleLogout = useCallback(() => {
-    fetch('/api/logout', { method: 'POST', credentials: 'include' })
+    apiFetch('/api/logout', { method: 'POST' })
       .finally(() => {
         setUser(null);
         setMyTeam(new Array(13).fill(null));
@@ -241,11 +242,10 @@ export default function App() {
     setSaveStatus('saving');
     const teamIds = myTeam.map(p => (p ? p.id : null));
     try {
-      const res = await fetch('/api/save-team', {
+      const res = await apiFetch('/api/save-team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ team: teamIds }),
-        credentials: 'include',
       });
       setSaveStatus(res.ok ? 'saved' : 'error');
     } catch {

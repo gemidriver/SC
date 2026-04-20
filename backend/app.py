@@ -7,7 +7,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'sc-dev-key-please-change-in-production')
-CORS(app, supports_credentials=True)
+
+_frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+CORS(app, supports_credentials=True, origins=[_frontend_url, 'http://localhost:3000'])
 
 BASE_URL = "https://supercoach.heraldsun.com.au/2026/api/nrl/classic/v1"
 
