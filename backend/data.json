@@ -1,0 +1,8 @@
+{
+  "users": {
+    "gemidriver": {
+      "password": "scrypt:32768:8:1$wRRNwewtwSxibTtv$774d2927d0d238e10d9e311e8105e6fc5508fef56b80ac9d8db53ad6df0636c35744c1599cc2ad1329459e173e66b622f25d4467cdf4d25699f7b2ef676c4e9b"
+    }
+  },
+  "teams": {}
+}
