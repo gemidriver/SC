@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { apiFetch } from '../api';
 import './Login.css';
+import { DEFAULT_AVATAR_KEY } from '../profileOptions';
 
 export default function Login({ onLogin }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
@@ -26,7 +27,11 @@ export default function Login({ onLogin }) {
       if (!res.ok) {
         setError(data.error || 'Something went wrong');
       } else {
-        onLogin(data.username);
+        onLogin(data.user || {
+          username: data.username,
+          displayName: data.username,
+          avatarKey: DEFAULT_AVATAR_KEY,
+        });
       }
     } catch {
       setError('Could not connect to server');

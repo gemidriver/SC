@@ -103,13 +103,79 @@
 .header-user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.header-username {
-  font-size: 12px;
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-nav-btn {
+  background: transparent;
+  border: 1px solid #30363d;
+  border-radius: 999px;
   color: #8b949e;
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.header-nav-btn:hover {
+  border-color: #388bfd;
+  color: #e6edf3;
+}
+
+.header-nav-btn.active {
+  border-color: #388bfd;
+  background: rgba(56, 139, 253, 0.12);
+  color: #58a6ff;
+}
+
+.header-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+.header-user-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header-display-name {
+  font-size: 13px;
+  color: #e6edf3;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.header-username {
+  font-size: 11px;
+  color: #8b949e;
+  line-height: 1.1;
 }
 
 .header-logout {

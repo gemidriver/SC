@@ -1,10 +1,20 @@
 import React from 'react';
 import './Header.css';
+import { getAvatarOption, getDisplayName } from '../profileOptions';
 
-export default function Header({ filledCount, totalCost, budget, user, onLogout }) {
+export default function Header({
+  filledCount,
+  totalCost,
+  budget,
+  user,
+  activeView,
+  onNavigate,
+  onLogout,
+}) {
   const remaining = budget - totalCost;
   const pct = Math.min(100, (totalCost / budget) * 100);
   const over = remaining < 0;
+  const avatar = user ? getAvatarOption(user.avatarKey) : null;
 
   const fmtM = (n) => {
     if (n >= 1000000 || n <= -1000000) return `$${(n / 1000000).toFixed(2)}m`;
@@ -41,7 +51,31 @@ export default function Header({ filledCount, totalCost, budget, user, onLogout 
 
       {user && (
         <div className="header-user">
-          <span className="header-username">{user}</span>
+          <div className="header-nav">
+            <button
+              className={`header-nav-btn ${activeView === 'players' ? 'active' : ''}`}
+              onClick={() => onNavigate('players')}
+              type="button"
+            >
+              Team
+            </button>
+            <button
+              className={`header-nav-btn ${activeView === 'profile' ? 'active' : ''}`}
+              onClick={() => onNavigate('profile')}
+              type="button"
+            >
+              Profile
+            </button>
+          </div>
+          <div className="header-user-badge">
+            <div className="header-avatar" style={{ background: avatar.background }}>
+              {avatar.mark}
+            </div>
+            <div className="header-user-copy">
+              <span className="header-display-name">{getDisplayName(user)}</span>
+              <span className="header-username">@{user.username}</span>
+            </div>
+          </div>
           <button className="header-logout" onClick={onLogout}>Sign out</button>
         </div>
       )}

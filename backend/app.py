@@ -16,6 +16,16 @@ CORS(app, supports_credentials=True, origins=_allowed_origins)
 BASE_URL = "https://supercoach.heraldsun.com.au/2026/api/nrl/classic/v1"
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
+DEFAULT_AVATAR_KEY = 'captain'
+ALLOWED_AVATAR_KEYS = {
+    'captain',
+    'blitz',
+    'lockdown',
+    'rocket',
+    'phantom',
+    'volt',
+}
+MAX_DISPLAY_NAME_LENGTH = 40
 
 
 def get_db():
@@ -28,7 +38,9 @@ def init_db():
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     username TEXT PRIMARY KEY,
-                    password TEXT NOT NULL
+                    password TEXT NOT NULL,
+                    display_name TEXT,
+                    avatar_key TEXT
                 )
             """)
             cur.execute("""
@@ -37,10 +49,41 @@ def init_db():
                     team JSONB NOT NULL DEFAULT '[]'
                 )
             """)
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_key TEXT")
 
 
 if DATABASE_URL:
     init_db()
+
+
+def normalize_display_name(value, username):
+    display_name = (value or '').strip()
+    if not display_name:
+        return username
+    if len(display_name) > MAX_DISPLAY_NAME_LENGTH:
+        raise ValueError(f'Display name must be {MAX_DISPLAY_NAME_LENGTH} characters or fewer')
+    return display_name
+
+
+def normalize_avatar_key(value):
+    avatar_key = (value or DEFAULT_AVATAR_KEY).strip().lower()
+    if avatar_key not in ALLOWED_AVATAR_KEYS:
+        raise ValueError('Please choose a valid avatar')
+    return avatar_key
+
+
+def build_user_payload(row):
+    username = row['username']
+    display_name = (row.get('display_name') or '').strip() or username
+    avatar_key = row.get('avatar_key') or DEFAULT_AVATAR_KEY
+    if avatar_key not in ALLOWED_AVATAR_KEYS:
+        avatar_key = DEFAULT_AVATAR_KEY
+    return {
+        'username': username,
+        'displayName': display_name,
+        'avatarKey': avatar_key,
+    }
 
 
 @app.route("/api/register", methods=["POST"])
@@ -56,19 +99,31 @@ def register():
     if len(password) < 6:
         return jsonify({'error': 'Password must be at least 6 characters'}), 400
 
+    try:
+        display_name = normalize_display_name(body.get('displayName'), username)
+        avatar_key = normalize_avatar_key(body.get('avatarKey'))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
     hashed = generate_password_hash(password)
     try:
         with get_db() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 cur.execute(
-                    "INSERT INTO users (username, password) VALUES (%s, %s)",
-                    (username, hashed)
+                    """
+                    INSERT INTO users (username, password, display_name, avatar_key)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING username, display_name, avatar_key
+                    """,
+                    (username, hashed, display_name, avatar_key)
                 )
+                user = cur.fetchone()
     except psycopg2.errors.UniqueViolation:
         return jsonify({'error': 'Username already taken'}), 409
 
     session['username'] = username
-    return jsonify({'username': username}), 201
+    payload = build_user_payload(user)
+    return jsonify({'username': username, 'user': payload}), 201
 
 
 @app.route("/api/login", methods=["POST"])
@@ -79,14 +134,22 @@ def login():
 
     with get_db() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("SELECT password FROM users WHERE username = %s", (username,))
+            cur.execute(
+                """
+                SELECT username, password, display_name, avatar_key
+                FROM users
+                WHERE username = %s
+                """,
+                (username,)
+            )
             user = cur.fetchone()
 
     if not user or not check_password_hash(user['password'], password):
         return jsonify({'error': 'Invalid username or password'}), 401
 
     session['username'] = username
-    return jsonify({'username': username})
+    payload = build_user_payload(user)
+    return jsonify({'username': username, 'user': payload})
 
 
 @app.route("/api/logout", methods=["POST"])
@@ -98,7 +161,60 @@ def logout():
 @app.route("/api/me")
 def me():
     username = session.get('username')
-    return jsonify({'user': username or None})
+    if not username:
+        return jsonify({'user': None})
+
+    with get_db() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT username, display_name, avatar_key
+                FROM users
+                WHERE username = %s
+                """,
+                (username,)
+            )
+            user = cur.fetchone()
+
+    if not user:
+        session.clear()
+        return jsonify({'user': None})
+
+    return jsonify({'user': build_user_payload(user)})
+
+
+@app.route("/api/profile", methods=["POST"])
+def update_profile():
+    username = session.get('username')
+    if not username:
+        return jsonify({'error': 'Not authenticated'}), 401
+
+    body = request.get_json() or {}
+
+    try:
+        display_name = normalize_display_name(body.get('displayName'), username)
+        avatar_key = normalize_avatar_key(body.get('avatarKey'))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+    with get_db() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                UPDATE users
+                SET display_name = %s, avatar_key = %s
+                WHERE username = %s
+                RETURNING username, display_name, avatar_key
+                """,
+                (display_name, avatar_key, username)
+            )
+            user = cur.fetchone()
+
+    if not user:
+        session.clear()
+        return jsonify({'error': 'User not found'}), 404
+
+    return jsonify({'user': build_user_payload(user)})
 
 
 @app.route("/api/save-team", methods=["POST"])

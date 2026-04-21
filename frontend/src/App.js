@@ -4,6 +4,7 @@ import TeamPanel from './components/TeamPanel';
 import PlayerModal from './components/PlayerModal';
 import Header from './components/Header';
 import Login from './components/Login';
+import ProfilePage from './components/ProfilePage';
 import { apiFetch } from './api';
 import './App.css';
 
@@ -119,7 +120,7 @@ export default function App() {
         setError(e.message);
         setLoading(false);
       });
-  }, [user]);
+  }, [user?.username]);
 
   const positions = useMemo(() => {
     const s = new Set(players.map(p => getPrimaryPos(p)));
@@ -219,12 +220,13 @@ export default function App() {
 
   const filledCount = myTeam.filter(Boolean).length;
 
-  const handleLogin = useCallback((username) => {
-    setUser(username);
+  const handleLogin = useCallback((currentUser) => {
+    setUser(currentUser);
     setMyTeam(new Array(13).fill(null));
     setPlayers([]);
     setLoading(true);
     setError(null);
+    setActiveTab('players');
   }, []);
 
   const handleLogout = useCallback(() => {
@@ -235,7 +237,26 @@ export default function App() {
         setPlayers([]);
         setLoading(true);
         setError(null);
+        setActiveTab('players');
       });
+  }, []);
+
+  const handleNavigate = useCallback((nextTab) => {
+    setActiveTab(nextTab);
+    setSelectedPlayer(null);
+  }, []);
+
+  const handleSaveProfile = useCallback(async ({ displayName, avatarKey }) => {
+    const res = await apiFetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ displayName, avatarKey }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Could not save profile');
+    }
+    setUser(data.user);
   }, []);
 
   const handleSaveTeam = useCallback(async () => {
@@ -259,55 +280,69 @@ export default function App() {
 
   return (
     <div className="app-wrap">
-      <Header filledCount={filledCount} totalCost={totalCost} budget={BUDGET} user={user} onLogout={handleLogout} />
+      <Header
+        filledCount={filledCount}
+        totalCost={totalCost}
+        budget={BUDGET}
+        user={user}
+        activeView={activeTab}
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+      />
 
-      <div className="main-layout">
-        <div className="left-panel">
-          <div className="filter-bar">
-            <input
-              className="search-input"
-              placeholder="Search players..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+      {activeTab === 'profile' ? (
+        <div className="profile-layout">
+          <ProfilePage user={user} onSave={handleSaveProfile} />
+        </div>
+      ) : (
+        <div className="main-layout">
+          <div className="left-panel">
+            <div className="filter-bar">
+              <input
+                className="search-input"
+                placeholder="Search players..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <select className="filter-select" value={posFilter} onChange={e => setPosFilter(e.target.value)}>
+                <option value="">All positions</option>
+                {positions.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)}>
+                <option value="">All clubs</option>
+                {nrlTeams.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <span className="player-count">{filtered.length} players</span>
+            </div>
+
+            <PlayerList
+              players={filtered}
+              loading={loading}
+              error={error}
+              teamPlayerIds={teamPlayerIds}
+              remaining={BUDGET - totalCost}
+              sortCol={sortCol}
+              sortDir={sortDir}
+              onSort={handleSort}
+              onToggle={handleTogglePlayer}
+              onSelect={setSelectedPlayer}
             />
-            <select className="filter-select" value={posFilter} onChange={e => setPosFilter(e.target.value)}>
-              <option value="">All positions</option>
-              {positions.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-            <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)}>
-              <option value="">All clubs</option>
-              {nrlTeams.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <span className="player-count">{filtered.length} players</span>
           </div>
 
-          <PlayerList
-            players={filtered}
-            loading={loading}
-            error={error}
-            teamPlayerIds={teamPlayerIds}
-            remaining={BUDGET - totalCost}
-            sortCol={sortCol}
-            sortDir={sortDir}
-            onSort={handleSort}
-            onToggle={handleTogglePlayer}
-            onSelect={setSelectedPlayer}
-          />
+          <div className="right-panel">
+            <TeamPanel
+              team={myTeam}
+              structure={TEAM_STRUCTURE}
+              budget={BUDGET}
+              totalCost={totalCost}
+              onRemove={handleRemoveFromSlot}
+              onSelect={setSelectedPlayer}
+              onSave={handleSaveTeam}
+              saveStatus={saveStatus}
+            />
+          </div>
         </div>
-
-        <div className="right-panel">
-          <TeamPanel
-            team={myTeam}
-            structure={TEAM_STRUCTURE}
-            budget={BUDGET}
-            totalCost={totalCost}
-            onRemove={handleRemoveFromSlot}
-            onSelect={setSelectedPlayer}
-            onSave={handleSaveTeam}
-            saveStatus={saveStatus}
-          />
-        </div>
-      </div>
+      )}
 
       {selectedPlayer && (
         <PlayerModal

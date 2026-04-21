@@ -14,6 +14,11 @@
   overflow: hidden;
 }
 
+.profile-layout {
+  flex: 1;
+  overflow: auto;
+}
+
 .left-panel {
   display: flex;
   flex-direction: column;
