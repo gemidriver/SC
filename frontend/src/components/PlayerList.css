@@ -17,14 +17,14 @@
 
 .pl-col {
   font-size: 11px;
-  color: #484f58;
+  color: #6e7681;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
 }
-.pl-col:hover { color: #8b949e; }
+.pl-col:hover { color: #adbac7; }
 .pl-col.sorted { color: #388bfd; }
 .pl-col-left { text-align: left; }
 .pl-col-right { text-align: right; }
@@ -75,7 +75,7 @@
 }
 .pl-club {
   font-size: 11px;
-  color: #484f58;
+  color: #6e7681;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -116,9 +116,9 @@
 
 .pl-stat {
   font-size: 12px;
-  color: #8b949e;
+  color: #adbac7;
 }
-.pl-muted { color: #484f58; }
+.pl-muted { color: #6e7681; }
 
 .add-btn {
   width: 24px;
