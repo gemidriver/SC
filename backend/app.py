@@ -3,6 +3,8 @@ from flask_cors import CORS
 import requests
 import json
 import os
+import psycopg2
+import psycopg2.extras
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -13,19 +15,32 @@ CORS(app, supports_credentials=True, origins=_allowed_origins)
 
 BASE_URL = "https://supercoach.heraldsun.com.au/2026/api/nrl/classic/v1"
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), 'data.json')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
-    return {'users': {}, 'teams': {}}
+def get_db():
+    return psycopg2.connect(DATABASE_URL)
 
 
-def save_data(data):
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
+def init_db():
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    username TEXT PRIMARY KEY,
+                    password TEXT NOT NULL
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS teams (
+                    username TEXT PRIMARY KEY REFERENCES users(username) ON DELETE CASCADE,
+                    team JSONB NOT NULL DEFAULT '[]'
+                )
+            """)
+
+
+if DATABASE_URL:
+    init_db()
 
 
 @app.route("/api/register", methods=["POST"])
@@ -41,12 +56,17 @@ def register():
     if len(password) < 6:
         return jsonify({'error': 'Password must be at least 6 characters'}), 400
 
-    data = load_data()
-    if username in data['users']:
+    hashed = generate_password_hash(password)
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO users (username, password) VALUES (%s, %s)",
+                    (username, hashed)
+                )
+    except psycopg2.errors.UniqueViolation:
         return jsonify({'error': 'Username already taken'}), 409
 
-    data['users'][username] = {'password': generate_password_hash(password)}
-    save_data(data)
     session['username'] = username
     return jsonify({'username': username}), 201
 
@@ -57,8 +77,11 @@ def login():
     username = (body.get('username') or '').strip().lower()
     password = body.get('password') or ''
 
-    data = load_data()
-    user = data['users'].get(username)
+    with get_db() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT password FROM users WHERE username = %s", (username,))
+            user = cur.fetchone()
+
     if not user or not check_password_hash(user['password'], password):
         return jsonify({'error': 'Invalid username or password'}), 401
 
@@ -87,9 +110,12 @@ def save_team():
     body = request.get_json() or {}
     team = body.get('team', [])  # list of player IDs (int or None)
 
-    data = load_data()
-    data['teams'][username] = team
-    save_data(data)
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO teams (username, team) VALUES (%s, %s)
+                ON CONFLICT (username) DO UPDATE SET team = EXCLUDED.team
+            """, (username, json.dumps(team)))
     return jsonify({'ok': True})
 
 
@@ -99,8 +125,12 @@ def my_team():
     if not username:
         return jsonify({'error': 'Not authenticated'}), 401
 
-    data = load_data()
-    team = data['teams'].get(username, [])
+    with get_db() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT team FROM teams WHERE username = %s", (username,))
+            row = cur.fetchone()
+
+    team = row['team'] if row else []
     return jsonify({'team': team})
 
 
