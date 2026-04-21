@@ -286,6 +286,7 @@ export default function App() {
             loading={loading}
             error={error}
             teamPlayerIds={teamPlayerIds}
+            remaining={BUDGET - totalCost}
             sortCol={sortCol}
             sortDir={sortDir}
             onSort={handleSort}

@@ -29,7 +29,7 @@ const COLS = [
   { key: 'played', label: 'Gms',    align: 'center' },
 ];
 
-export default function PlayerList({ players, loading, error, teamPlayerIds, sortCol, sortDir, onSort, onToggle, onSelect }) {
+export default function PlayerList({ players, loading, error, teamPlayerIds, remaining, sortCol, sortDir, onSort, onToggle, onSelect }) {
   if (loading) return (
     <div className="pl-state">
       <div className="pl-spinner" />
@@ -71,6 +71,7 @@ export default function PlayerList({ players, loading, error, teamPlayerIds, sor
           const pos = getPrimaryPos(p);
           const s = getStats(p);
           const inTeam = teamPlayerIds.has(p.id);
+          const overBudget = !inTeam && s.price > 0 && s.price > remaining;
           const posColor = POS_COLORS[pos] || '#484f58';
           const pc = fmtPriceChange(s.priceChange);
           const injStatus = p.injury_suspension_status;
@@ -78,7 +79,7 @@ export default function PlayerList({ players, loading, error, teamPlayerIds, sor
           return (
             <div
               key={p.id || i}
-              className={`pl-row ${inTeam ? 'in-team' : ''} ${injStatus ? 'injured' : ''}`}
+              className={`pl-row ${inTeam ? 'in-team' : ''} ${injStatus ? 'injured' : ''} ${overBudget ? 'over-budget' : ''}`}
               onClick={() => onSelect(p)}
             >
               <div className="pl-col pl-pos-col">
@@ -110,11 +111,12 @@ export default function PlayerList({ players, loading, error, teamPlayerIds, sor
 
               <div className="pl-col pl-action-col">
                 <button
-                  className={`add-btn ${inTeam ? 'added' : ''}`}
-                  onClick={e => { e.stopPropagation(); onToggle(p); }}
-                  title={inTeam ? 'Remove from team' : 'Add to team'}
+                  className={`add-btn ${inTeam ? 'added' : ''} ${overBudget ? 'over-budget' : ''}`}
+                  onClick={e => { e.stopPropagation(); if (!overBudget) onToggle(p); }}
+                  title={inTeam ? 'Remove from team' : overBudget ? 'Not enough budget' : 'Add to team'}
+                  disabled={overBudget}
                 >
-                  {inTeam ? '✓' : '+'}
+                  {inTeam ? '✓' : overBudget ? '✕' : '+'}
                 </button>
               </div>
             </div>

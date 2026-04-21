@@ -136,8 +136,10 @@
   line-height: 1;
   flex-shrink: 0;
 }
-.add-btn:hover { border-color: #388bfd; color: #388bfd; background: rgba(56,139,253,0.1); }
+.add-btn:hover:not(:disabled) { border-color: #388bfd; color: #388bfd; background: rgba(56,139,253,0.1); }
 .add-btn.added { border-color: #3fb950; color: #3fb950; background: rgba(63,185,80,0.1); }
+.add-btn.over-budget { border-color: #30363d; color: #484f58; cursor: not-allowed; opacity: 0.4; }
+.pl-row.over-budget { opacity: 0.45; }
 
 .pl-state {
   display: flex;
