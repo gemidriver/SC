@@ -25,7 +25,7 @@
 
 .team-meta {
   font-size: 11px;
-  color: #484f58;
+  color: #6e7681;
 }
 
 .team-slots {
@@ -96,7 +96,7 @@
 
 .slot-club {
   font-size: 10px;
-  color: #484f58;
+  color: #6e7681;
 }
 
 .slot-price {
@@ -119,7 +119,7 @@
 .slot-empty-label {
   flex: 1;
   font-size: 11px;
-  color: #30363d;
+  color: #484f58;
   font-style: italic;
 }
 
@@ -161,7 +161,7 @@
 
 .budget-label {
   font-size: 11px;
-  color: #484f58;
+  color: #6e7681;
 }
 
 .budget-val {
