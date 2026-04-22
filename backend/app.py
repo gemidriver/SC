@@ -203,6 +203,81 @@ def update_profile():
     return jsonify({'user': build_user_payload(user)})
 
 
+@app.route("/api/members")
+def get_members():
+    """Return all members with their team info and matchup record."""
+    if not session.get('username'):
+        return jsonify({'error': 'Not authenticated'}), 401
+
+    # Fetch all users — select only known columns (created_at may not exist)
+    ur = requests.get(
+        f'{SUPABASE_URL}/rest/v1/users',
+        headers=_sb_headers(),
+        params={'select': 'username,display_name,avatar_key'},
+        timeout=10,
+    )
+    ur.raise_for_status()
+    users_list = ur.json()
+
+    # Fetch all teams (squad sizes)
+    tr = requests.get(
+        f'{SUPABASE_URL}/rest/v1/teams',
+        headers=_sb_headers(),
+        params={'select': 'username,team'},
+        timeout=10,
+    )
+    tr.raise_for_status()
+    teams_list = tr.json()
+    teams_by_user = {t['username']: t for t in teams_list}
+
+    # Fetch all matchups to calculate wins
+    try:
+        mr = requests.get(
+            f'{SUPABASE_URL}/rest/v1/matchups',
+            headers=_sb_headers(),
+            params={'select': 'user1,user2,winner'},
+            timeout=10,
+        )
+        mr.raise_for_status()
+        all_matchups = mr.json()
+    except Exception:
+        all_matchups = []
+
+    # Tally matchup stats per user
+    played = {}
+    wins = {}
+    for m in all_matchups:
+        for u in (m.get('user1'), m.get('user2')):
+            if u:
+                played[u] = played.get(u, 0) + 1
+        w = m.get('winner')
+        if w:
+            wins[w] = wins.get(w, 0) + 1
+
+    members = []
+    for u in users_list:
+        uname = u['username']
+        team = teams_by_user.get(uname)
+        squad = (team.get('team') or []) if team else []
+        filled = sum(1 for p in squad if p is not None)
+        p = played.get(uname, 0)
+        w = wins.get(uname, 0)
+        members.append({
+            'username': uname,
+            'display_name': u.get('display_name') or uname,
+            'avatar_key': u.get('avatar_key') or 'captain',
+            'squad_size': filled,
+            'matchups_played': p,
+            'matchups_won': w,
+            'matchups_lost': p - w,
+            'win_rate': round(w / p * 100) if p > 0 else 0,
+        })
+
+    # Sort by wins desc, then display name
+    members.sort(key=lambda m: (-m['matchups_won'], m['display_name'].lower()))
+    return jsonify({'members': members})
+
+
 @app.route("/api/save-team", methods=["POST"])
 def save_team():
     username = session.get('username')

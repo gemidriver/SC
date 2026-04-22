@@ -8,10 +8,11 @@ import ProfilePage from './components/ProfilePage';
 import FieldView from './components/FieldView';
 import StatsPage from './components/StatsPage';
 import MatchupPage from './components/MatchupPage';
+import MembersPage from './components/MembersPage';
 import { apiFetch } from './api';
 import './App.css';
 
-const BUDGET = 10000000;
+const BUDGET = 14000000;
 
 // 13 starters + 4 bench + 1 emergency = 18
 export const TEAM_STRUCTURE = [
@@ -391,6 +392,8 @@ export default function App() {
         <StatsPage players={players} />
       ) : activeTab === 'matchup' ? (
         <MatchupPage players={players} myTeam={myTeam} captainId={captainId} vcId={vcId} user={user} />
+      ) : activeTab === 'members' ? (
+        <MembersPage currentUser={user} />
       ) : (
         <div className="main-layout">
           <div className="left-panel">

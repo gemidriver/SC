@@ -74,6 +74,13 @@ export default function Header({
               Matchup
             </button>
             <button
+              className={`header-nav-btn ${activeView === 'members' ? 'active' : ''}`}
+              onClick={() => onNavigate('members')}
+              type="button"
+            >
+              Members
+            </button>
+            <button
               className={`header-nav-btn ${activeView === 'stats' ? 'active' : ''}`}
               onClick={() => onNavigate('stats')}
               type="button"
