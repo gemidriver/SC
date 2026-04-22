@@ -14,11 +14,11 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
   const over = remaining < 0;
   const filledCount = team.filter(Boolean).length;
 
-  const starters = structure.slice(0, 13);
-  const bench = structure.slice(13);
+  const starters = structure.slice(0, 14);
+  const bench = structure.slice(14);
 
   const avgScore = (() => {
-    const filled = team.slice(0, 13).filter(Boolean);
+    const filled = team.slice(0, 14).filter(Boolean);
     if (!filled.length) return 0;
     const total = filled.reduce((s, p) => s + getStats(p).avg, 0);
     return Math.round(total / filled.length);
@@ -26,7 +26,7 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
 
   const roundPts = (() => {
     let total = 0;
-    team.slice(0, 13).forEach(p => {
+    team.slice(0, 14).forEach(p => {
       if (!p) return;
       const pts = getStats(p).lastPoints;
       const mult = p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1;
@@ -105,7 +105,7 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
         <div className="slots-section-label">Starters</div>
         {starters.map((slot, i) => renderSlot(slot, i, true))}
         <div className="slots-section-label bench-label">Bench &amp; Reserves</div>
-        {bench.map((slot, i) => renderSlot(slot, 13 + i, false))}
+        {bench.map((slot, i) => renderSlot(slot, 14 + i, false))}
       </div>
 
       <div className="team-footer">

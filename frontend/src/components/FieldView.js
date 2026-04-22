@@ -18,6 +18,7 @@ const POSITION_COORDS = [
   { x: 76,  y: 22 }, // 10 2RF  2nd Row (right) — right edge
   { x: 24,  y: 22 }, // 11 2RF  2nd Row (left)  — left edge
   { x: 50,  y: 17 }, // 12 2RF  Lock            — behind hooker
+  { x: 78,  y: 50 }, // 13 FLX  Flex            — utility, right of halves
 ];
 
 const POS_COLORS = {
@@ -70,8 +71,8 @@ export default function FieldView({ team, structure, captainId, vcId, onSwap }) 
   const [swapIdx, setSwapIdx] = useState(null);                 // index of slot pending swap
   const [perspective, setPerspective] = useState(true);
 
-  const starters = team.slice(0, 13);
-  const bench    = team.slice(13, 18);
+  const starters = team.slice(0, 14);
+  const bench    = team.slice(14, 18);
 
   // Handle click on a field token or bench card
   const handleTokenClick = (player, slotIdx) => {
@@ -150,7 +151,7 @@ export default function FieldView({ team, structure, captainId, vcId, onSwap }) 
         <div className="bench-sidebar">
           <div className="bench-sidebar-title">Bench</div>
           {bench.map((player, i) => {
-            const slotIdx = 13 + i;
+            const slotIdx = 14 + i;
             const slotInfo = structure[slotIdx];
             const pos = player ? getPrimaryPos(player) : null;
             const color = pos ? (POS_COLORS[pos] || '#484f58') : '#484f58';

@@ -11,7 +11,7 @@ import MatchupPage from './components/MatchupPage';
 import { apiFetch } from './api';
 import './App.css';
 
-const BUDGET = 6000000;
+const BUDGET = 10000000;
 
 // 13 starters + 4 bench + 1 emergency = 18
 export const TEAM_STRUCTURE = [
@@ -28,11 +28,11 @@ export const TEAM_STRUCTURE = [
   { pos: '2RF', label: '2nd Row',     type: 'starter' },
   { pos: '2RF', label: '2nd Row',     type: 'starter' },
   { pos: '2RF', label: 'Lock',        type: 'starter' },
-  { pos: 'FRF', label: 'Bench 1',    type: 'bench' },
-  { pos: '2RF', label: 'Bench 2',    type: 'bench' },
-  { pos: 'HOK', label: 'Bench 3',    type: 'bench' },
-  { pos: null,  label: 'Bench 4',    type: 'bench' },
-  { pos: null,  label: 'Emergency',  type: 'reserve' },
+  { pos: null,  label: 'Flex',        type: 'starter' },  // 14th on-field, any position
+  { pos: null,  label: 'Reserve 1',   type: 'bench' },
+  { pos: null,  label: 'Reserve 2',   type: 'bench' },
+  { pos: null,  label: 'Reserve 3',   type: 'bench' },
+  { pos: null,  label: 'Reserve 4',   type: 'bench' },
 ];
 
 /** Returns true when a player's game has started or finished (lock them in). */
