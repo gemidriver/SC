@@ -24,10 +24,10 @@ export default function Header({
   return (
     <header className="header">
       <div className="header-brand">
-        <span className="header-logo">BJ</span>
+        <img src="/trade_raider.png" alt="Trade Raider" className="header-logo" />
         <div>
-          <div className="header-title">Gemidriver NRL</div>
-          <div className="header-sub">Team Builder 2026</div>
+          <div className="header-title">Trade Raider</div>
+          <div className="header-sub">One More Trade</div>
         </div>
       </div>
 

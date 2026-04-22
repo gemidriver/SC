@@ -17,18 +17,11 @@
 }
 
 .header-logo {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #388bfd, #1f6feb);
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.5px;
+  object-fit: contain;
+  display: block;
 }
 
 .header-title {
