@@ -34,7 +34,7 @@ export default function Header({
       <div className="header-stats">
         <div className="hstat">
           <span className="hstat-label">Squad</span>
-          <span className="hstat-val">{filledCount}<span className="hstat-max">/13</span></span>
+          <span className="hstat-val">{filledCount}<span className="hstat-max">/18</span></span>
         </div>
         <div className="hstat">
           <span className="hstat-label">Spent</span>
@@ -58,6 +58,27 @@ export default function Header({
               type="button"
             >
               Team
+            </button>
+            <button
+              className={`header-nav-btn ${activeView === 'field' ? 'active' : ''}`}
+              onClick={() => onNavigate('field')}
+              type="button"
+            >
+              Field
+            </button>
+            <button
+              className={`header-nav-btn ${activeView === 'matchup' ? 'active' : ''}`}
+              onClick={() => onNavigate('matchup')}
+              type="button"
+            >
+              Matchup
+            </button>
+            <button
+              className={`header-nav-btn ${activeView === 'stats' ? 'active' : ''}`}
+              onClick={() => onNavigate('stats')}
+              type="button"
+            >
+              Stats
             </button>
             <button
               className={`header-nav-btn ${activeView === 'profile' ? 'active' : ''}`}

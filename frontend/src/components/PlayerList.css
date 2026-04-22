@@ -7,7 +7,7 @@
 
 .pl-header {
   display: grid;
-  grid-template-columns: 68px 1fr 76px 48px 48px 52px 44px 36px;
+  grid-template-columns: 68px 1fr 68px 52px 48px 48px 52px 44px 36px;
   gap: 4px;
   padding: 6px 16px;
   background: #161b22;
@@ -41,7 +41,7 @@
 
 .pl-row {
   display: grid;
-  grid-template-columns: 68px 1fr 76px 48px 48px 52px 44px 36px;
+  grid-template-columns: 68px 1fr 68px 52px 48px 48px 52px 44px 36px;
   gap: 4px;
   padding: 7px 16px;
   border-bottom: 1px solid #161b22;

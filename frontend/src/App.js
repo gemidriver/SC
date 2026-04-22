@@ -5,26 +5,42 @@ import PlayerModal from './components/PlayerModal';
 import Header from './components/Header';
 import Login from './components/Login';
 import ProfilePage from './components/ProfilePage';
+import FieldView from './components/FieldView';
+import StatsPage from './components/StatsPage';
+import MatchupPage from './components/MatchupPage';
 import { apiFetch } from './api';
 import './App.css';
 
 const BUDGET = 6000000;
 
-const TEAM_STRUCTURE = [
-  { pos: 'WFB', label: 'Fullback' },
-  { pos: 'CTW', label: 'Wing' },
-  { pos: 'CTW', label: 'Centre' },
-  { pos: 'CTW', label: 'Centre' },
-  { pos: 'CTW', label: 'Wing' },
-  { pos: 'HFB', label: 'Five-eighth' },
-  { pos: 'HFB', label: 'Halfback' },
-  { pos: 'HOK', label: 'Hooker' },
-  { pos: 'FRF', label: 'Prop' },
-  { pos: 'FRF', label: 'Prop' },
-  { pos: '2RF', label: '2nd Row' },
-  { pos: '2RF', label: '2nd Row' },
-  { pos: '2RF', label: 'Lock' },
+// 13 starters + 4 bench + 1 emergency = 18
+export const TEAM_STRUCTURE = [
+  { pos: 'WFB', label: 'Fullback',    type: 'starter' },
+  { pos: 'CTW', label: 'Wing',        type: 'starter' },
+  { pos: 'CTW', label: 'Centre',      type: 'starter' },
+  { pos: 'CTW', label: 'Centre',      type: 'starter' },
+  { pos: 'CTW', label: 'Wing',        type: 'starter' },
+  { pos: 'HFB', label: 'Five-eighth', type: 'starter' },
+  { pos: 'HFB', label: 'Halfback',    type: 'starter' },
+  { pos: 'HOK', label: 'Hooker',      type: 'starter' },
+  { pos: 'FRF', label: 'Prop',        type: 'starter' },
+  { pos: 'FRF', label: 'Prop',        type: 'starter' },
+  { pos: '2RF', label: '2nd Row',     type: 'starter' },
+  { pos: '2RF', label: '2nd Row',     type: 'starter' },
+  { pos: '2RF', label: 'Lock',        type: 'starter' },
+  { pos: 'FRF', label: 'Bench 1',    type: 'bench' },
+  { pos: '2RF', label: 'Bench 2',    type: 'bench' },
+  { pos: 'HOK', label: 'Bench 3',    type: 'bench' },
+  { pos: null,  label: 'Bench 4',    type: 'bench' },
+  { pos: null,  label: 'Emergency',  type: 'reserve' },
 ];
+
+/** Returns true when a player's game has started or finished (lock them in). */
+export function isPlayerLocked(player) {
+  const status = player?.played_status?.display;
+  // Only lock while the game is actively in progress
+  return status === 'Playing';
+}
 
 export function getPrimaryPos(p) {
   if (p.positions && p.positions.length > 0) return p.positions[0].position;
@@ -70,7 +86,9 @@ export default function App() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [myTeam, setMyTeam] = useState(new Array(13).fill(null));
+  const [myTeam, setMyTeam] = useState(new Array(18).fill(null));
+  const [captainId, setCaptainId] = useState(null);
+  const [vcId, setVcId] = useState(null);
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState('');
   const [teamFilter, setTeamFilter] = useState('');
@@ -108,11 +126,16 @@ export default function App() {
       })
       .then(r => r && r.json())
       .then(data => {
-        if (!data || !data.team || !data.team.length) return;
-        // data.team is array of player IDs (or null slots)
+        if (!data || !data.team) return;
+        setCaptainId(data.captain_id || null);
+        setVcId(data.vice_captain_id || null);
+        if (!data.team.length) return;
         setPlayers(prev => {
           const idMap = new Map(prev.map(p => [p.id, p]));
-          setMyTeam(data.team.map(id => (id != null ? idMap.get(id) || null : null)));
+          // Pad to 18 if older saves had 13 slots
+          const slots = [...data.team];
+          while (slots.length < 18) slots.push(null);
+          setMyTeam(slots.map(id => (id != null ? idMap.get(id) || null : null)));
           return prev;
         });
       })
@@ -128,7 +151,7 @@ export default function App() {
   }, [players]);
 
   const nrlTeams = useMemo(() => {
-    const s = new Set(players.map(p => p.nrl_club).filter(Boolean));
+    const s = new Set(players.map(p => p.team?.abbrev || p.nrl_club).filter(Boolean));
     return [...s].sort();
   }, [players]);
 
@@ -137,7 +160,8 @@ export default function App() {
       const name = `${p.first_name || ''} ${p.last_name || ''}`.toLowerCase();
       if (search && !name.includes(search.toLowerCase())) return false;
       if (posFilter && getPrimaryPos(p) !== posFilter) return false;
-      if (teamFilter && p.nrl_club !== teamFilter) return false;
+      const club = p.team?.abbrev || p.nrl_club;
+      if (teamFilter && club !== teamFilter) return false;
       return true;
     });
 
@@ -172,20 +196,32 @@ export default function App() {
       const existingIdx = team.findIndex(p => p && p.id === player.id);
 
       if (existingIdx !== -1) {
+        // Cannot remove if game has started
+        if (isPlayerLocked(player)) {
+          alert(`${player.first_name} ${player.last_name}'s game has started — players cannot be changed once their round has begun.`);
+          return prev;
+        }
         team[existingIdx] = null;
         return team;
       }
 
       const pos = getPrimaryPos(player);
+      // Try matching position slot first (starters), then bench, then any empty
       const slotIdx = TEAM_STRUCTURE.findIndex((s, i) => s.pos === pos && !team[i]);
       if (slotIdx !== -1) {
         team[slotIdx] = player;
       } else {
-        const anyEmpty = team.findIndex(x => !x);
-        if (anyEmpty !== -1) team[anyEmpty] = player;
-        else {
-          alert('Team is full! Remove a player first.');
-          return prev;
+        // Try bench/reserve utility slots (pos: null)
+        const utilityIdx = TEAM_STRUCTURE.findIndex((s, i) => s.pos === null && !team[i]);
+        if (utilityIdx !== -1) {
+          team[utilityIdx] = player;
+        } else {
+          const anyEmpty = team.findIndex(x => !x);
+          if (anyEmpty !== -1) team[anyEmpty] = player;
+          else {
+            alert('Squad is full (18 players)! Remove a player first.');
+            return prev;
+          }
         }
       }
       return team;
@@ -194,14 +230,30 @@ export default function App() {
 
   const handleRemoveFromSlot = useCallback((slotIdx) => {
     setMyTeam(prev => {
+      const player = prev[slotIdx];
+      if (player && isPlayerLocked(player)) {
+        alert(`${player.first_name} ${player.last_name}'s game has started — players cannot be changed once their round has begun.`);
+        return prev;
+      }
       const team = [...prev];
+      const removedId = team[slotIdx]?.id;
       team[slotIdx] = null;
+      // Clear captain/vc if removed
+      if (removedId) {
+        setCaptainId(c => c === removedId ? null : c);
+        setVcId(v => v === removedId ? null : v);
+      }
       return team;
     });
   }, []);
 
   const handleSwapSlot = useCallback((slotIdx, player) => {
     setMyTeam(prev => {
+      const occupant = prev[slotIdx];
+      if (occupant && isPlayerLocked(occupant)) {
+        alert(`${occupant.first_name} ${occupant.last_name}'s game has started — cannot swap this slot.`);
+        return prev;
+      }
       const team = [...prev];
       const existingIdx = team.findIndex(p => p && p.id === player.id);
       if (existingIdx !== -1) {
@@ -209,6 +261,41 @@ export default function App() {
       } else {
         team[slotIdx] = player;
       }
+      return team;
+    });
+  }, []);
+
+  const handleSetCaptain = useCallback((playerId) => {
+    setCaptainId(prev => {
+      if (prev === playerId) return null; // toggle off
+      setVcId(v => v === playerId ? null : v); // can't be both
+      return playerId;
+    });
+  }, []);
+
+  const handleSetVC = useCallback((playerId) => {
+    setVcId(prev => {
+      if (prev === playerId) return null;
+      setCaptainId(c => c === playerId ? null : c);
+      return playerId;
+    });
+  }, []);
+
+  // Swap two slots by index — used by FieldView to move starters to/from bench
+  const handleSwapSlots = useCallback((idxA, idxB) => {
+    setMyTeam(prev => {
+      const playerA = prev[idxA];
+      const playerB = prev[idxB];
+      if (playerA && isPlayerLocked(playerA)) {
+        alert(`${playerA.first_name} ${playerA.last_name}'s game has started — cannot swap.`);
+        return prev;
+      }
+      if (playerB && isPlayerLocked(playerB)) {
+        alert(`${playerB.first_name} ${playerB.last_name}'s game has started — cannot swap.`);
+        return prev;
+      }
+      const team = [...prev];
+      [team[idxA], team[idxB]] = [team[idxB], team[idxA]];
       return team;
     });
   }, []);
@@ -222,7 +309,9 @@ export default function App() {
 
   const handleLogin = useCallback((currentUser) => {
     setUser(currentUser);
-    setMyTeam(new Array(13).fill(null));
+    setMyTeam(new Array(18).fill(null));
+    setCaptainId(null);
+    setVcId(null);
     setPlayers([]);
     setLoading(true);
     setError(null);
@@ -233,7 +322,9 @@ export default function App() {
     apiFetch('/api/logout', { method: 'POST' })
       .finally(() => {
         setUser(null);
-        setMyTeam(new Array(13).fill(null));
+        setMyTeam(new Array(18).fill(null));
+        setCaptainId(null);
+        setVcId(null);
         setPlayers([]);
         setLoading(true);
         setError(null);
@@ -266,14 +357,14 @@ export default function App() {
       const res = await apiFetch('/api/save-team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team: teamIds }),
+        body: JSON.stringify({ team: teamIds, captain_id: captainId, vice_captain_id: vcId }),
       });
       setSaveStatus(res.ok ? 'saved' : 'error');
     } catch {
       setSaveStatus('error');
     }
     setTimeout(() => setSaveStatus(null), 2500);
-  }, [myTeam]);
+  }, [myTeam, captainId, vcId]);
 
   if (authLoading) return null;
   if (!user) return <Login onLogin={handleLogin} />;
@@ -294,6 +385,12 @@ export default function App() {
         <div className="profile-layout">
           <ProfilePage user={user} onSave={handleSaveProfile} />
         </div>
+      ) : activeTab === 'field' ? (
+        <FieldView team={myTeam} structure={TEAM_STRUCTURE} captainId={captainId} vcId={vcId} onSwap={handleSwapSlots} />
+      ) : activeTab === 'stats' ? (
+        <StatsPage players={players} />
+      ) : activeTab === 'matchup' ? (
+        <MatchupPage players={players} myTeam={myTeam} captainId={captainId} vcId={vcId} user={user} />
       ) : (
         <div className="main-layout">
           <div className="left-panel">
@@ -335,6 +432,10 @@ export default function App() {
               structure={TEAM_STRUCTURE}
               budget={BUDGET}
               totalCost={totalCost}
+              captainId={captainId}
+              vcId={vcId}
+              onSetCaptain={handleSetCaptain}
+              onSetVC={handleSetVC}
               onRemove={handleRemoveFromSlot}
               onSelect={setSelectedPlayer}
               onSave={handleSaveTeam}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { getStats } from '../App';
+import { getStats, isPlayerLocked } from '../App';
 import { fmtPrice } from './PlayerList';
 import './TeamPanel.css';
 
@@ -8,56 +8,104 @@ const POS_COLORS = {
   FRF: '#f0883e', '2RF': '#a371f7', WFB: '#39d353', FLB: '#f778ba',
 };
 
-export default function TeamPanel({ team, structure, budget, totalCost, onRemove, onSelect, onSave, saveStatus }) {
+export default function TeamPanel({ team, structure, budget, totalCost, captainId, vcId, onSetCaptain, onSetVC, onRemove, onSelect, onSave, saveStatus }) {
   const remaining = budget - totalCost;
   const pct = Math.min(100, (totalCost / budget) * 100);
   const over = remaining < 0;
   const filledCount = team.filter(Boolean).length;
 
+  const starters = structure.slice(0, 13);
+  const bench = structure.slice(13);
+
   const avgScore = (() => {
-    const filled = team.filter(Boolean);
+    const filled = team.slice(0, 13).filter(Boolean);
     if (!filled.length) return 0;
     const total = filled.reduce((s, p) => s + getStats(p).avg, 0);
     return Math.round(total / filled.length);
   })();
 
+  const roundPts = (() => {
+    let total = 0;
+    team.slice(0, 13).forEach(p => {
+      if (!p) return;
+      const pts = getStats(p).lastPoints;
+      const mult = p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1;
+      total += pts * mult;
+    });
+    return Math.round(total);
+  })();
+
+  const renderSlot = (slot, i, isStarter) => {
+    const p = team[i];
+    const pc = POS_COLORS[slot.pos] || '#484f58';
+    const s = p ? getStats(p) : null;
+    const locked = p ? isPlayerLocked(p) : false;
+    const isCap = p && p.id === captainId;
+    const isVC = p && p.id === vcId;
+    const isBench = slot.type === 'bench' || slot.type === 'reserve';
+
+    return (
+      <div key={i} className={`team-slot ${p ? 'filled' : 'empty'} ${isBench ? 'bench-slot' : ''} ${locked ? 'locked' : ''}`}>
+        <div className="slot-pos" style={{ color: pc, borderColor: pc + '33' }}>
+          {slot.label}
+        </div>
+        {p ? (
+          <div className="slot-info" onClick={() => onSelect(p)}>
+            <div className="slot-name">
+              {isCap && <span className="role-badge cap">C</span>}
+              {isVC && <span className="role-badge vc">VC</span>}
+              {p.first_name} {p.last_name}
+              {locked && <span className="lock-icon" title="Game in progress — locked">🔒</span>}
+            </div>
+            <div className="slot-details">
+              <span className="slot-club">{p.team?.abbrev || p.nrl_club}</span>
+              <span className="slot-price">{fmtPrice(s.price)}</span>
+              <span className="slot-avg">{s.avg} avg</span>
+              {s.lastPoints > 0 && <span className="slot-pts" title="Last round">{isCap ? `${s.lastPoints}×2` : isVC ? `${s.lastPoints}×1.5` : s.lastPoints} pts</span>}
+              {s.breakeven > 0 && <span className="slot-be" title="Breakeven">BE {s.breakeven}</span>}
+            </div>
+          </div>
+        ) : (
+          <div className="slot-empty-label">Empty</div>
+        )}
+        {p && !locked && (
+          <div className="slot-actions">
+            {isStarter && (
+              <>
+                <button
+                  className={`role-btn ${isCap ? 'active-cap' : ''}`}
+                  onClick={() => onSetCaptain(p.id)}
+                  title={isCap ? 'Remove captain' : 'Set captain (2x points)'}
+                >C</button>
+                <button
+                  className={`role-btn ${isVC ? 'active-vc' : ''}`}
+                  onClick={() => onSetVC(p.id)}
+                  title={isVC ? 'Remove vice captain' : 'Set vice captain (1.5x points)'}
+                >VC</button>
+              </>
+            )}
+            <button className="slot-remove" onClick={() => onRemove(i)} title="Remove">×</button>
+          </div>
+        )}
+        {p && locked && (
+          <div className="slot-actions" />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="team-panel">
       <div className="team-header">
-        <span className="team-title">My Team</span>
-        <span className="team-meta">{filledCount}/13 · avg {avgScore || '—'}</span>
+        <span className="team-title">My Squad</span>
+        <span className="team-meta">{filledCount}/18 · avg {avgScore || '—'}{roundPts > 0 ? ` · ${roundPts} pts` : ''}</span>
       </div>
 
       <div className="team-slots">
-        {structure.map((slot, i) => {
-          const p = team[i];
-          const pc = POS_COLORS[slot.pos] || '#484f58';
-          const s = p ? getStats(p) : null;
-
-          return (
-            <div key={i} className={`team-slot ${p ? 'filled' : 'empty'}`}>
-              <div className="slot-pos" style={{ color: pc, borderColor: pc + '33' }}>
-                {slot.label}
-              </div>
-              {p ? (
-                <div className="slot-info" onClick={() => onSelect(p)}>
-                  <div className="slot-name">{p.first_name} {p.last_name}</div>
-                  <div className="slot-details">
-                    <span className="slot-club">{p.team?.abbrev || p.nrl_club}</span>
-                    <span className="slot-price">{fmtPrice(s.price)}</span>
-                    <span className="slot-avg">{s.avg} avg</span>
-                    {s.breakeven > 0 && <span className="slot-be" title="Breakeven">BE {s.breakeven}</span>}
-                  </div>
-                </div>
-              ) : (
-                <div className="slot-empty-label">Empty</div>
-              )}
-              {p && (
-                <button className="slot-remove" onClick={() => onRemove(i)} title="Remove">×</button>
-              )}
-            </div>
-          );
-        })}
+        <div className="slots-section-label">Starters</div>
+        {starters.map((slot, i) => renderSlot(slot, i, true))}
+        <div className="slots-section-label bench-label">Bench &amp; Reserves</div>
+        {bench.map((slot, i) => renderSlot(slot, 13 + i, false))}
       </div>
 
       <div className="team-footer">
@@ -82,7 +130,7 @@ export default function TeamPanel({ team, structure, budget, totalCost, onRemove
           onClick={onSave}
           disabled={saveStatus === 'saving' || filledCount === 0}
         >
-          {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved ✓' : saveStatus === 'error' ? 'Error — try again' : 'Save team'}
+          {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved ✓' : saveStatus === 'error' ? 'Error — try again' : 'Save squad'}
         </button>
       </div>
     </div>

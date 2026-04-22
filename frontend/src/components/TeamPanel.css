@@ -37,6 +37,22 @@
   gap: 4px;
 }
 
+.slots-section-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8b949e;
+  padding: 6px 4px 2px;
+}
+.bench-label {
+  margin-top: 4px;
+  border-top: 1px solid #30363d;
+  padding-top: 8px;
+  color: #a371f7;
+}
+
 .team-slot {
   display: flex;
   align-items: center;
@@ -55,6 +71,25 @@
 }
 .team-slot.filled:hover {
   border-color: #30363d;
+}
+.team-slot.bench-slot {
+  background: #0d1117;
+  border-color: #2d2440;
+}
+.team-slot.bench-slot .slot-pos {
+  border-color: #a371f755 !important;
+  color: #a371f7 !important;
+}
+.team-slot.bench-slot .slot-empty-label {
+  color: #6e7681;
+  font-style: normal;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+.team-slot.locked {
+  border-color: #3d2f00;
+  background: #1a1500;
 }
 
 .slot-pos {
@@ -85,7 +120,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   transition: color 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+
+.role-badge {
+  font-size: 9px;
+  font-weight: 800;
+  border-radius: 3px;
+  padding: 1px 4px;
+  flex-shrink: 0;
+}
+.role-badge.cap  { background: #d4a017; color: #000; }
+.role-badge.vc   { background: #388bfd; color: #fff; }
+
+.lock-icon { font-size: 10px; }
 
 .slot-details {
   display: flex;
@@ -98,6 +148,99 @@
   font-size: 10px;
   color: #6e7681;
 }
+.slot-price { font-size: 10px; color: #3fb950; }
+.slot-avg   { font-size: 10px; color: #e6edf3; }
+.slot-pts   { font-size: 10px; color: #e3b341; font-weight: 600; }
+.slot-be    { font-size: 10px; color: #6e7681; }
+
+.slot-empty-label {
+  flex: 1;
+  font-size: 11px;
+  color: #484f58;
+  font-style: italic;
+}
+
+.slot-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.role-btn {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 5px;
+  transition: all 0.1s;
+}
+.role-btn:hover { border-color: #8b949e; color: #e6edf3; }
+.role-btn.active-cap { background: #d4a017; border-color: #d4a017; color: #000; }
+.role-btn.active-vc  { background: #388bfd; border-color: #388bfd; color: #fff; }
+
+.slot-remove {
+  background: none;
+  border: none;
+  color: #484f58;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.1s;
+  flex-shrink: 0;
+}
+.slot-remove:hover { color: #f85149; }
+
+/* Footer */
+.team-footer {
+  padding: 12px 16px;
+  background: #161b22;
+  border-top: 1px solid #21262d;
+  flex-shrink: 0;
+}
+
+.budget-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+.budget-label { color: #6e7681; }
+.budget-val   { color: #e6edf3; font-weight: 600; }
+.budget-val.over  { color: #f85149; }
+.budget-val.good  { color: #3fb950; }
+
+.budget-bar-wrap {
+  height: 3px;
+  background: #21262d;
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.budget-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+.save-btn {
+  width: 100%;
+  padding: 9px;
+  border-radius: 8px;
+  border: none;
+  background: #238636;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+.save-btn:hover:not(:disabled) { background: #2ea043; }
+.save-btn:disabled { opacity: 0.5; cursor: default; }
+.save-btn.save-btn-ok  { background: #1f6feb; }
+.save-btn.save-btn-err { background: #da3633; }
+
 
 .slot-price {
   font-size: 10px;

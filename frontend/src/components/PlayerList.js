@@ -21,12 +21,13 @@ function fmtPriceChange(n) {
 }
 
 const COLS = [
-  { key: 'name',   label: 'Player', align: 'left'   },
-  { key: 'price',  label: 'Price',  align: 'right'  },
-  { key: 'avg',    label: 'Avg',    align: 'center' },
-  { key: 'avg3',   label: 'Avg3',   align: 'center' },
-  { key: 'total',  label: 'Total',  align: 'center' },
-  { key: 'played', label: 'Gms',    align: 'center' },
+  { key: 'name',        label: 'Player', align: 'left'   },
+  { key: 'price',       label: 'Price',  align: 'right'  },
+  { key: 'priceChange', label: '±',      align: 'right'  },
+  { key: 'avg',         label: 'Avg',    align: 'center' },
+  { key: 'avg3',        label: 'Avg3',   align: 'center' },
+  { key: 'total',       label: 'Total',  align: 'center' },
+  { key: 'played',      label: 'Gms',    align: 'center' },
 ];
 
 export default function PlayerList({ players, loading, error, teamPlayerIds, remaining, sortCol, sortDir, onSort, onToggle, onSelect }) {
@@ -97,11 +98,14 @@ export default function PlayerList({ players, loading, error, teamPlayerIds, rem
 
               <div className="pl-col pl-col-right">
                 <div className="pl-price">{fmtPrice(s.price)}</div>
-                {pc && (
+              </div>
+
+              <div className="pl-col pl-col-right">
+                {pc ? (
                   <div className={`pl-price-change ${pc.up ? 'up' : 'down'}`}>
                     {pc.up ? '▲' : '▼'} {pc.str}
                   </div>
-                )}
+                ) : <span className="pl-muted">—</span>}
               </div>
 
               <div className="pl-col pl-col-center pl-stat pl-avg-main">{s.avg || '—'}</div>
