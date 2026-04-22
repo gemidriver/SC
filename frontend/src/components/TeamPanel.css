@@ -241,6 +241,49 @@
 .save-btn.save-btn-ok  { background: #1f6feb; }
 .save-btn.save-btn-err { background: #da3633; }
 
+/* ═══════════════════════════════════════════════
+   MOBILE  (≤ 768px)
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .team-slots {
+    padding: 6px 8px;
+    gap: 3px;
+  }
+
+  .team-slot {
+    padding: 8px 10px;
+  }
+
+  .slot-pos {
+    font-size: 9px;
+    min-width: 52px;
+    padding: 3px 5px;
+  }
+
+  .slot-name {
+    font-size: 13px;
+  }
+
+  .slot-details {
+    gap: 6px;
+  }
+
+  /* Larger remove / role buttons */
+  .slot-remove {
+    font-size: 20px;
+    padding: 0 6px;
+  }
+  .role-btn {
+    font-size: 10px;
+    padding: 4px 7px;
+  }
+
+  .save-btn {
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
 
 .slot-price {
   font-size: 10px;

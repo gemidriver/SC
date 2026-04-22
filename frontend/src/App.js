@@ -370,6 +370,9 @@ export default function App() {
   if (authLoading) return null;
   if (!user) return <Login onLogin={handleLogin} />;
 
+  const isPlayersTab = activeTab === 'players';
+  const isSquadTab   = activeTab === 'squad';
+
   return (
     <div className="app-wrap">
       <Header
@@ -396,7 +399,7 @@ export default function App() {
         <MembersPage currentUser={user} />
       ) : (
         <div className="main-layout">
-          <div className="left-panel">
+          <div className={`left-panel${isSquadTab ? ' mobile-hidden' : ''}`}>
             <div className="filter-bar">
               <input
                 className="search-input"
@@ -429,7 +432,7 @@ export default function App() {
             />
           </div>
 
-          <div className="right-panel">
+          <div className={`right-panel${isSquadTab ? ' mobile-active' : ''}`}>
             <TeamPanel
               team={myTeam}
               structure={TEAM_STRUCTURE}
@@ -456,6 +459,30 @@ export default function App() {
           onClose={() => setSelectedPlayer(null)}
         />
       )}
+
+      {/* Mobile bottom navigation */}
+      <nav className="mobile-bottom-nav">
+        <button className={`mbn-btn${isPlayersTab ? ' active' : ''}`} onClick={() => handleNavigate('players')}>
+          <span className="mbn-icon">⚡</span><span className="mbn-label">Players</span>
+        </button>
+        <button className={`mbn-btn${isSquadTab ? ' active' : ''}`} onClick={() => handleNavigate('squad')}>
+          <span className="mbn-icon">👥</span>
+          <span className="mbn-label">Squad</span>
+          {filledCount > 0 && <span className="mbn-badge">{filledCount}</span>}
+        </button>
+        <button className={`mbn-btn${activeTab === 'field' ? ' active' : ''}`} onClick={() => handleNavigate('field')}>
+          <span className="mbn-icon">🏟</span><span className="mbn-label">Field</span>
+        </button>
+        <button className={`mbn-btn${activeTab === 'matchup' ? ' active' : ''}`} onClick={() => handleNavigate('matchup')}>
+          <span className="mbn-icon">⚔️</span><span className="mbn-label">Matchup</span>
+        </button>
+        <button className={`mbn-btn${activeTab === 'members' ? ' active' : ''}`} onClick={() => handleNavigate('members')}>
+          <span className="mbn-icon">🏆</span><span className="mbn-label">Members</span>
+        </button>
+        <button className={`mbn-btn${activeTab === 'profile' ? ' active' : ''}`} onClick={() => handleNavigate('profile')}>
+          <span className="mbn-icon">👤</span><span className="mbn-label">Profile</span>
+        </button>
+      </nav>
     </div>
   );
 }

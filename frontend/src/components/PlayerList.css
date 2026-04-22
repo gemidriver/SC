@@ -178,6 +178,58 @@
 }
 .pl-error-title { font-size: 15px; font-weight: 600; color: #f85149; }
 .pl-error-msg { font-size: 12px; color: #8b949e; max-width: 300px; }
+
+/* ═══════════════════════════════════════════════
+   MOBILE  (≤ 768px)
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* On mobile: pos | name | avg | add — hide less-used cols */
+  .pl-header,
+  .pl-row {
+    grid-template-columns: 52px 1fr 44px 36px;
+    padding: 8px 12px;
+  }
+
+  /* Hide price, ±, avg3, total, played columns on mobile */
+  .pl-header > *:nth-child(3),   /* Price */
+  .pl-header > *:nth-child(4),   /* ± */
+  .pl-header > *:nth-child(5),   /* Avg3 */
+  .pl-header > *:nth-child(6),   /* Total */
+  .pl-header > *:nth-child(7),   /* Gms */
+  .pl-row    > *:nth-child(3),
+  .pl-row    > *:nth-child(4),
+  .pl-row    > *:nth-child(5),
+  .pl-row    > *:nth-child(6),
+  .pl-row    > *:nth-child(7) {
+    display: none;
+  }
+
+  /* Bigger tap targets */
+  .pl-row {
+    padding: 10px 12px;
+    min-height: 52px;
+  }
+
+  .pl-name {
+    font-size: 14px;
+  }
+  .pl-club {
+    font-size: 12px;
+  }
+
+  .add-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+
+  /* Avg column — show prominently on mobile */
+  .pl-stat {
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
 .pl-error-hint {
   font-size: 11px;
   color: #484f58;

@@ -22,6 +22,18 @@
   padding: 20px;
 }
 
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-card {
+    border-radius: 16px 16px 0 0;
+    max-height: 85vh;
+    padding: 16px;
+  }
+}
+
 .modal-close {
   position: absolute;
   top: 12px;
