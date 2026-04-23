@@ -44,9 +44,10 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
     const isCap = p && p.id === captainId;
     const isVC = p && p.id === vcId;
     const isBench = slot.type === 'bench' || slot.type === 'reserve';
+    const hasPlayed = s?.hasPlayed;
 
     return (
-      <div key={i} className={`team-slot ${p ? 'filled' : 'empty'} ${isBench ? 'bench-slot' : ''} ${locked ? 'locked' : ''}`}>
+      <div key={i} className={`team-slot ${p ? 'filled' : 'empty'} ${isBench ? 'bench-slot' : ''} ${locked ? 'locked' : ''} ${hasPlayed ? 'played' : ''}`}>
         <div className="slot-pos" style={{ color: pc, borderColor: pc + '33' }}>
           {slot.label}
         </div>
@@ -68,9 +69,10 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
                   {isCap ? `${s.roundPoints}×2` : isVC ? `${s.roundPoints}×1.5` : s.roundPoints}
                 </span>
               )}
-              {!s.isLive && s.roundPoints > 0 && (
-                <span className="slot-pts" title="Round score">
-                  {isCap ? `${s.roundPoints}×2` : isVC ? `${s.roundPoints}×1.5` : s.roundPoints} pts
+              {hasPlayed && (
+                <span className="slot-pts final" title="Final score">
+                  {isCap ? `${s.roundPoints}×2` : isVC ? `${s.roundPoints}×1.5` : s.roundPoints}
+                  <span className="slot-fin">FIN</span>
                 </span>
               )}
               {s.breakeven > 0 && <span className="slot-be" title="Breakeven">BE {s.breakeven}</span>}

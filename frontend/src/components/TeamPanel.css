@@ -151,7 +151,21 @@
 .slot-price { font-size: 10px; color: #3fb950; }
 .slot-avg   { font-size: 10px; color: #e6edf3; }
 .slot-pts { font-size: 10px; color: #e3b341; font-weight: 600; }
-.slot-pts.live { color: #3fb950; display: flex; align-items: center; gap: 3px; }
+.slot-pts.live  { color: #3fb950; display: flex; align-items: center; gap: 3px; }
+.slot-pts.final { color: #e6edf3; display: flex; align-items: center; gap: 4px; }
+
+.slot-fin {
+  font-size: 8px;
+  font-weight: 700;
+  color: #3fb950;
+  letter-spacing: 0.4px;
+  opacity: 0.85;
+}
+
+/* Played state — subtle left border tint */
+.team-slot.played {
+  border-left: 2px solid rgba(63, 185, 80, 0.35);
+}
 
 .slot-live-dot {
   display: inline-block;

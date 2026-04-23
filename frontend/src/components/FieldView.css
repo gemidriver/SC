@@ -277,7 +277,32 @@
   align-items: center;
   gap: 2px;
 }
-.token-pts.live { color: #3fb950; }
+.token-pts.live  { color: #3fb950; }
+.token-pts.final { color: #e6edf3; }
+
+/* FIN badge on played tokens */
+.token-fin {
+  position: absolute;
+  top: -8px;
+  left: -6px;
+  background: rgba(63,185,80,0.2);
+  border: 1px solid rgba(63,185,80,0.5);
+  color: #3fb950;
+  font-size: 6px;
+  font-weight: 800;
+  border-radius: 3px;
+  padding: 1px 3px;
+  letter-spacing: 0.4px;
+  z-index: 1;
+}
+
+/* Dim tokens that haven't played yet to draw focus to the active ones */
+.player-token.filled:not(.has-played):not(.is-live) .token-initials {
+  opacity: 0.55;
+}
+.player-token.filled:not(.has-played):not(.is-live) .token-name {
+  opacity: 0.55;
+}
 
 .token-live-dot {
   display: inline-block;

@@ -75,6 +75,7 @@ export function getStats(p) {
     roundPoints: round,      // alias for clarity
     livePoints: live,        // in-game live score (0 when not playing)
     isLive,                  // true while game is in progress
+    hasPlayed: !isLive && round > 0, // game finished this round, score locked
     currentRound: s ? (s.round || 0) : 0,
     owned: s ? (s.owned || 0) : 0,
     breakeven: s ? (s.ppts || 0) : 0,

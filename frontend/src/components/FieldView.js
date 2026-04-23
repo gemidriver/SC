@@ -51,20 +51,21 @@ function PlayerToken({ player, slot, captainId, vcId, isSelected, isPendingSwap,
 
   return (
     <div
-      className={`player-token filled ${isSelected ? 'selected' : ''} ${isPendingSwap ? 'swap-target' : ''} ${isCap ? 'is-cap' : ''} ${isVC ? 'is-vc' : ''}`}
+      className={`player-token filled ${isSelected ? 'selected' : ''} ${isPendingSwap ? 'swap-target' : ''} ${isCap ? 'is-cap' : ''} ${isVC ? 'is-vc' : ''} ${s.hasPlayed ? 'has-played' : ''} ${s.isLive ? 'is-live' : ''}`}
       style={{ left: `${slot.x}%`, top: `${slot.y}%`, '--token-color': color }}
       onClick={() => onSelect(player, slot.idx)}
-      title={`${player.first_name} ${player.last_name} — ${pos}${isSelected ? ' (selected — click another to swap)' : ''}`}
+      title={`${player.first_name} ${player.last_name} — ${pos}${s.hasPlayed ? ' ✓ Final' : s.isLive ? ' 🟢 Live' : ''}${isSelected ? ' (selected — click another to swap)' : ''}`}
     >
       {(isCap || isVC) && (
         <div className="token-role">{isCap ? 'C' : 'VC'}</div>
       )}
+      {s.hasPlayed && <div className="token-fin">FIN</div>}
       <div className="token-initials">
         <span className="token-pos-label">{pos}</span>
       </div>
       <div className="token-name">{player.first_name} {player.last_name}</div>
       {multipliedPts > 0 && (
-        <div className={`token-pts ${s.isLive ? 'live' : ''}`}>
+        <div className={`token-pts ${s.isLive ? 'live' : s.hasPlayed ? 'final' : ''}`}>
           {s.isLive && <span className="token-live-dot" />}{multipliedPts}
         </div>
       )}
