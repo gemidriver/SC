@@ -221,11 +221,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 9px;
+  font-weight: 900;
   color: #fff;
   border: 2.5px solid rgba(255,255,255,0.9);
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  letter-spacing: 0.3px;
+}
+
+.token-pos-label {
+  font-size: 9px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.3px;
   text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
 
@@ -250,7 +259,7 @@
   color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.9);
   white-space: nowrap;
-  max-width: 60px;
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
@@ -376,3 +385,118 @@
 }
 .fdc-stat span   { font-size: 9px; color: #6e7681; text-transform: uppercase; letter-spacing: 0.4px; }
 .fdc-stat strong { font-size: 16px; font-weight: 700; color: #e6edf3; font-family: 'Barlow Condensed', sans-serif; }
+
+/* ═══════════════════════════════════════════════
+   MOBILE  (≤ 768px)
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .field-toolbar {
+    padding: 8px 12px;
+  }
+
+  /* Stack field + bench vertically, scrollable */
+  .field-outer {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 8px 12px;
+    gap: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Scale the surface to fit the viewport width */
+  .field-scene {
+    perspective: none !important;
+  }
+
+  .field-scene.perspective .field-surface {
+    transform: none !important;
+  }
+
+  .field-surface {
+    /* Scale proportionally: original is 420 × 620, ratio = 1.4762 */
+    width: calc(100vw - 32px);
+    height: calc((100vw - 32px) * 1.4762);
+    max-width: 420px;
+    max-height: 620px;
+  }
+
+  /* Scale down tokens to match smaller field */
+  .token-initials {
+    width: 30px;
+    height: 30px;
+    font-size: 8px;
+    border-width: 2px;
+  }
+  .token-pos-label {
+    font-size: 8px;
+  }
+  .player-token.empty .token-pos {
+    width: 30px;
+    height: 30px;
+    font-size: 8px;
+  }
+  .token-name {
+    font-size: 7px;
+    max-width: 60px;
+  }
+  .token-pts {
+    font-size: 7px;
+  }
+  .token-role {
+    font-size: 6px;
+    top: -6px;
+    right: -4px;
+    padding: 1px 3px;
+  }
+
+  /* Bench goes horizontal below the field */
+  .bench-sidebar {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: calc(100vw - 16px);
+    min-width: 0;
+    gap: 8px;
+    padding: 4px 0 4px;
+    /* Stick bench title to the left */
+    align-items: flex-start;
+  }
+  .bench-sidebar::-webkit-scrollbar { display: none; }
+
+  .bench-sidebar-title {
+    display: none; /* no room in horizontal layout */
+  }
+
+  .bench-card {
+    flex-shrink: 0;
+    min-width: 90px;
+    padding: 8px;
+  }
+
+  .bench-card-name {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80px;
+  }
+
+  /* Detail card — stay above bottom nav */
+  .field-detail-card {
+    bottom: 72px; /* 60px nav + 12px gap */
+    left: 12px;
+    right: 12px;
+    transform: none;
+    min-width: 0;
+    width: auto;
+  }
+
+  /* Hide perspective toggle — no 3D on mobile */
+  .perspective-toggle {
+    display: none;
+  }
+}
+

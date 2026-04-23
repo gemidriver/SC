@@ -58,9 +58,9 @@ function PlayerToken({ player, slot, captainId, vcId, isSelected, isPendingSwap,
         <div className="token-role">{isCap ? 'C' : 'VC'}</div>
       )}
       <div className="token-initials">
-        {(player.first_name?.[0] || '')}{(player.last_name?.[0] || '')}
+        <span className="token-pos-label">{pos}</span>
       </div>
-      <div className="token-name">{player.last_name}</div>
+      <div className="token-name">{player.first_name} {player.last_name}</div>
       {pts > 0 && <div className="token-pts">{isCap ? Math.round(pts * 2) : isVC ? Math.round(pts * 1.5) : pts}</div>}
     </div>
   );
