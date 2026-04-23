@@ -219,11 +219,11 @@ def get_members():
     ur.raise_for_status()
     users_list = ur.json()
 
-    # Fetch all teams (squad sizes)
+    # Fetch all teams (squad sizes + captain info for round score calc)
     tr = requests.get(
         f'{SUPABASE_URL}/rest/v1/teams',
         headers=_sb_headers(),
-        params={'select': 'username,team'},
+        params={'select': 'username,team,captain_id,vice_captain_id'},
         timeout=10,
     )
     tr.raise_for_status()
@@ -267,6 +267,9 @@ def get_members():
             'display_name': u.get('display_name') or uname,
             'avatar_key': u.get('avatar_key') or 'captain',
             'squad_size': filled,
+            'team_ids': squad,
+            'captain_id': team.get('captain_id') if team else None,
+            'vice_captain_id': team.get('vice_captain_id') if team else None,
             'matchups_played': p,
             'matchups_won': w,
             'matchups_lost': p - w,

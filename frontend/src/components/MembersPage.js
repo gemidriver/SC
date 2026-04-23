@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { apiFetch } from '../api';
 import { getAvatarOption, getDisplayName } from '../profileOptions';
+import { getStats } from '../App';
 import './MembersPage.css';
 
 function RankBadge({ rank }) {
@@ -22,7 +23,32 @@ function WinBar({ won, lost }) {
   );
 }
 
-export default function MembersPage({ currentUser }) {
+function calcRoundTotal(member, playersById) {
+  const ids = member.team_ids || [];
+  const cap = member.captain_id;
+  const vc  = member.vice_captain_id;
+  let total = 0, hasLive = false;
+  ids.forEach((id, i) => {
+    if (!id) return;
+    const p = playersById[id];
+    if (!p) return;
+    const s = getStats(p);
+    const isStarter = i < 14;
+    const mult = isStarter
+      ? (id === cap ? 2 : id === vc ? 1.5 : 1)
+      : 1;
+    total += s.roundPoints * mult;
+    if (s.isLive) hasLive = true;
+  });
+  return { total: Math.round(total), hasLive };
+}
+
+export default function MembersPage({ currentUser, players = [] }) {
+  const playersById = useMemo(() => {
+    const map = {};
+    players.forEach(p => { map[p.id] = p; });
+    return map;
+  }, [players]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -94,6 +120,7 @@ export default function MembersPage({ currentUser }) {
           const rank = members.indexOf(m) + 1; // rank by server-sorted position
           const avatar = getAvatarOption(m.avatar_key);
           const isMe = m.username === currentUser?.username;
+          const { total: rndTotal, hasLive: rndLive } = calcRoundTotal(m, playersById);
           return (
             <div key={m.username} className={`member-card ${isMe ? 'is-me' : ''}`}>
               <div className="mc-left">
@@ -111,6 +138,14 @@ export default function MembersPage({ currentUser }) {
               </div>
 
               <div className="mc-stats">
+                {players.length > 0 && (
+                  <div className="mc-stat">
+                    <span className="mc-stat-label rnd-label">
+                      {rndLive && <span className="mc-live-dot" />}RND
+                    </span>
+                    <span className={`mc-stat-val ${rndLive ? 'live' : rndTotal > 0 ? 'rnd' : ''}`}>{rndTotal > 0 ? rndTotal : '—'}</span>
+                  </div>
+                )}
                 <div className="mc-stat">
                   <span className="mc-stat-label">Squad</span>
                   <span className="mc-stat-val">{m.squad_size}<span className="mc-stat-max">/18</span></span>

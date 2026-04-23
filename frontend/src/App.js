@@ -437,7 +437,7 @@ export default function App() {
       ) : activeTab === 'matchup' ? (
         <MatchupPage players={players} myTeam={myTeam} captainId={captainId} vcId={vcId} user={user} />
       ) : activeTab === 'members' ? (
-        <MembersPage currentUser={user} />
+        <MembersPage currentUser={user} players={players} />
       ) : (
         <div className="main-layout">
           <div className={`left-panel${isSquadTab ? ' mobile-hidden' : ''}`}>
