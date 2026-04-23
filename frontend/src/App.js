@@ -52,16 +52,14 @@ export function getPrimaryPos(p) {
 export function getStats(p) {
   const s = p.player_stats && p.player_stats[0];
   const playedStatus = p.played_status?.status || 'pre';
-  // livepts = live in-game accumulating score (only >0 while status='now')
-  // points  = last completed round score (NOT current round until game ends)
-  // roundPoints = current round 7 contribution:
-  //   'now'  → livepts (actively scoring)
-  //   'pre'  → 0 (hasn't played this round yet)
-  //   other  → points (game completed this round, points updated to current round)
+  // livepts = live accumulating score (>0 while status='now'), final score when status='post'
+  // points  = LAST round's score (never use for current round)
+  // roundPoints: 'now'/'post' → livepts | 'pre' → 0
   const live  = s ? (s.livepts || 0) : 0;
-  const round = playedStatus === 'now' ? live
-              : playedStatus !== 'pre' ? (s ? (s.points || 0) : 0)
-              : 0;
+  // 'now'  = game in progress → use livepts (accumulating)
+  // 'post' = game finished this round → use livepts (final score for this round)
+  // 'pre'  = yet to play → 0
+  const round = (playedStatus === 'now' || playedStatus === 'post') ? live : 0;
   const isLive = playedStatus === 'now';
   return {
     avg: s ? Math.round(s.avg || 0) : 0,
