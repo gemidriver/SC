@@ -6,6 +6,8 @@ export default function Header({
   filledCount,
   totalCost,
   budget,
+  roundTotal,
+  hasLive,
   user,
   activeView,
   onNavigate,
@@ -44,6 +46,15 @@ export default function Header({
           <span className="hstat-label">Remaining</span>
           <span className={`hstat-val ${over ? 'over' : 'good'}`}>{over ? '-' : ''}{fmtM(Math.abs(remaining))}</span>
         </div>
+        {roundTotal > 0 && (
+          <div className="hstat">
+            <span className="hstat-label">
+              {hasLive && <span className="live-dot" title="Live scoring" />}
+              RND
+            </span>
+            <span className="hstat-val rnd-val">{roundTotal}</span>
+          </div>
+        )}
         <div className="budget-track">
           <div className="budget-fill" style={{ width: `${pct}%`, background: over ? '#f85149' : '#3fb950' }} />
         </div>

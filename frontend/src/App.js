@@ -52,6 +52,10 @@ export function getPrimaryPos(p) {
 
 export function getStats(p) {
   const s = p.player_stats && p.player_stats[0];
+  // livepts = in-game live score; points = completed round score
+  const live   = s ? (s.livepts  || 0) : 0;
+  const round  = s ? (s.points   || 0) : 0;
+  const isLive = s ? ((s.livegames || 0) > 0) : false;
   return {
     avg: s ? Math.round(s.avg || 0) : 0,
     avg3: s ? Math.round(s.avg3 || 0) : 0,
@@ -60,7 +64,10 @@ export function getStats(p) {
     played: s ? (s.total_games || 0) : 0,
     price: s ? (s.price || 0) : (p.price || 0),
     priceChange: s ? (s.total_price_change || 0) : 0,
-    lastPoints: s ? (s.ppts1 || 0) : 0,
+    lastPoints: round,       // current round completed score
+    roundPoints: round,      // alias for clarity
+    livePoints: live,        // in-game live score (0 when not playing)
+    isLive,                  // true while game is in progress
     owned: s ? (s.owned || 0) : 0,
     breakeven: s ? (s.ppts || 0) : 0,
     mvpValue: s ? Math.round(s.mvp_value || 0) : 0,
@@ -308,6 +315,21 @@ export default function App() {
 
   const filledCount = myTeam.filter(Boolean).length;
 
+  // Round scoring totals for the header stat bar
+  const { roundTotal, hasLive } = useMemo(() => {
+    let total = 0;
+    let live = false;
+    myTeam.slice(0, 14).forEach(p => {
+      if (!p) return;
+      const s = getStats(p);
+      const pts = s.isLive ? s.livePoints : s.roundPoints;
+      const mult = p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1;
+      total += pts * mult;
+      if (s.isLive) live = true;
+    });
+    return { roundTotal: Math.round(total), hasLive: live };
+  }, [myTeam, captainId, vcId]);
+
   const handleLogin = useCallback((currentUser) => {
     setUser(currentUser);
     setMyTeam(new Array(18).fill(null));
@@ -379,6 +401,8 @@ export default function App() {
         filledCount={filledCount}
         totalCost={totalCost}
         budget={BUDGET}
+        roundTotal={roundTotal}
+        hasLive={hasLive}
         user={user}
         activeView={activeTab}
         onNavigate={handleNavigate}

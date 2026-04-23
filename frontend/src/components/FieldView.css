@@ -273,6 +273,24 @@
   color: #e3b341;
   text-shadow: 0 1px 3px rgba(0,0,0,0.9);
   margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.token-pts.live { color: #3fb950; }
+
+.token-live-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3fb950;
+  flex-shrink: 0;
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
 }
 
 /* Bench sidebar */

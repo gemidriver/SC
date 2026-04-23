@@ -28,7 +28,8 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
     let total = 0;
     team.slice(0, 14).forEach(p => {
       if (!p) return;
-      const pts = getStats(p).lastPoints;
+      const s = getStats(p);
+      const pts = s.isLive ? s.livePoints : s.roundPoints;
       const mult = p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1;
       total += pts * mult;
     });
@@ -61,7 +62,17 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
               <span className="slot-club">{p.team?.abbrev || p.nrl_club}</span>
               <span className="slot-price">{fmtPrice(s.price)}</span>
               <span className="slot-avg">{s.avg} avg</span>
-              {s.lastPoints > 0 && <span className="slot-pts" title="Last round">{isCap ? `${s.lastPoints}×2` : isVC ? `${s.lastPoints}×1.5` : s.lastPoints} pts</span>}
+              {s.isLive && (
+                <span className="slot-pts live" title="Live score">
+                  <span className="slot-live-dot" />
+                  {isCap ? `${s.livePoints}×2` : isVC ? `${s.livePoints}×1.5` : s.livePoints}
+                </span>
+              )}
+              {!s.isLive && s.roundPoints > 0 && (
+                <span className="slot-pts" title="Round score">
+                  {isCap ? `${s.roundPoints}×2` : isVC ? `${s.roundPoints}×1.5` : s.roundPoints} pts
+                </span>
+              )}
               {s.breakeven > 0 && <span className="slot-be" title="Breakeven">BE {s.breakeven}</span>}
             </div>
           </div>

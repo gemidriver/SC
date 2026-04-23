@@ -150,7 +150,22 @@
 }
 .slot-price { font-size: 10px; color: #3fb950; }
 .slot-avg   { font-size: 10px; color: #e6edf3; }
-.slot-pts   { font-size: 10px; color: #e3b341; font-weight: 600; }
+.slot-pts { font-size: 10px; color: #e3b341; font-weight: 600; }
+.slot-pts.live { color: #3fb950; display: flex; align-items: center; gap: 3px; }
+
+.slot-live-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3fb950;
+  flex-shrink: 0;
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
 .slot-be    { font-size: 10px; color: #6e7681; }
 
 .slot-empty-label {

@@ -45,7 +45,9 @@ function PlayerToken({ player, slot, captainId, vcId, isSelected, isPendingSwap,
   const color = POS_COLORS[pos] || '#484f58';
   const isCap = player.id === captainId;
   const isVC  = player.id === vcId;
-  const pts   = s.lastPoints;
+  // Show live score if game in progress, otherwise completed round score
+  const displayPts = s.isLive ? s.livePoints : s.roundPoints;
+  const multipliedPts = isCap ? Math.round(displayPts * 2) : isVC ? Math.round(displayPts * 1.5) : displayPts;
 
   return (
     <div
@@ -61,7 +63,11 @@ function PlayerToken({ player, slot, captainId, vcId, isSelected, isPendingSwap,
         <span className="token-pos-label">{pos}</span>
       </div>
       <div className="token-name">{player.first_name} {player.last_name}</div>
-      {pts > 0 && <div className="token-pts">{isCap ? Math.round(pts * 2) : isVC ? Math.round(pts * 1.5) : pts}</div>}
+      {multipliedPts > 0 && (
+        <div className={`token-pts ${s.isLive ? 'live' : ''}`}>
+          {s.isLive && <span className="token-live-dot" />}{multipliedPts}
+        </div>
+      )}
     </div>
   );
 }
