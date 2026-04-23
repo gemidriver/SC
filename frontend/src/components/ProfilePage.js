@@ -115,7 +115,7 @@ export default function ProfilePage({ user, onSave }) {
         </form>
       </div>
 
-      <div className="profile-version">Trade Raider v{VERSION}</div>
+      <div className="profile-version">The Rage Trader v{VERSION}</div>
     </div>
   );
 }

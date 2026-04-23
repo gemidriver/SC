@@ -26,9 +26,9 @@ export default function Header({
   return (
     <header className="header">
       <div className="header-brand">
-        <img src="/trade_raider.png" alt="Trade Raider" className="header-logo" />
+        <img src="/trade_raider.png" alt="The Rage Trader" className="header-logo" />
         <div>
-          <div className="header-title">Trade Raider</div>
+          <div className="header-title">The Rage Trader</div>
           <div className="header-sub">One More Trade</div>
         </div>
       </div>
