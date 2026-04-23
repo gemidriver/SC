@@ -39,6 +39,13 @@
   line-height: 1.2;
 }
 
+.header-version {
+  font-size: 9px;
+  color: #484f58;
+  letter-spacing: 0.2px;
+  margin-left: 4px;
+}
+
 .header-stats {
   display: flex;
   align-items: center;

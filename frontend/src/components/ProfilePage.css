@@ -1,7 +1,9 @@
 .profile-page {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 28px;
+  gap: 16px;
 }
 
 .profile-card {
@@ -182,4 +184,10 @@
 .profile-save-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.profile-version {
+  font-size: 11px;
+  color: #484f58;
+  letter-spacing: 0.3px;
 }

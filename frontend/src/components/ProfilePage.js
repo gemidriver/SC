@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './ProfilePage.css';
 import { AVATAR_OPTIONS, DEFAULT_AVATAR_KEY, getAvatarOption } from '../profileOptions';
+import { VERSION } from '../version';
 
 export default function ProfilePage({ user, onSave }) {
   const [displayName, setDisplayName] = useState(user?.displayName || user?.username || '');
@@ -113,6 +114,8 @@ export default function ProfilePage({ user, onSave }) {
           </div>
         </form>
       </div>
+
+      <div className="profile-version">Trade Raider v{VERSION}</div>
     </div>
   );
 }
