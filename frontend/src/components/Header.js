@@ -8,6 +8,8 @@ export default function Header({
   budget,
   roundTotal,
   hasLive,
+  roundNum,
+  playedCount,
   user,
   activeView,
   onNavigate,
@@ -47,9 +49,9 @@ export default function Header({
           <span className={`hstat-val ${over ? 'over' : 'good'}`}>{over ? '-' : ''}{fmtM(Math.abs(remaining))}</span>
         </div>
         {roundTotal > 0 && (
-          <div className="hstat">
+          <div className="hstat" title={`Round total — ${playedCount} starter${playedCount !== 1 ? 's' : ''} scored${hasLive ? ', live game in progress' : ''}`}>
             <span className="hstat-label">
-              {hasLive && <span className="live-dot" title="Live scoring" />}
+              {hasLive && <span className="live-dot" />}
               RND
             </span>
             <span className="hstat-val rnd-val">{roundTotal}</span>

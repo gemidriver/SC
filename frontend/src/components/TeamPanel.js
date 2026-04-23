@@ -26,12 +26,12 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
 
   const roundPts = (() => {
     let total = 0;
-    team.slice(0, 14).forEach(p => {
+    team.forEach((p, i) => {
       if (!p) return;
       const s = getStats(p);
-      const pts = s.isLive ? s.livePoints : s.roundPoints;
-      const mult = p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1;
-      total += pts * mult;
+      const isStarter = i < 14;
+      const mult = isStarter ? (p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1) : 1;
+      total += s.roundPoints * mult;
     });
     return Math.round(total);
   })();
@@ -63,9 +63,9 @@ export default function TeamPanel({ team, structure, budget, totalCost, captainI
               <span className="slot-price">{fmtPrice(s.price)}</span>
               <span className="slot-avg">{s.avg} avg</span>
               {s.isLive && (
-                <span className="slot-pts live" title="Live score">
+                <span className="slot-pts live" title="Live — score updating">
                   <span className="slot-live-dot" />
-                  {isCap ? `${s.livePoints}×2` : isVC ? `${s.livePoints}×1.5` : s.livePoints}
+                  {isCap ? `${s.roundPoints}×2` : isVC ? `${s.roundPoints}×1.5` : s.roundPoints}
                 </span>
               )}
               {!s.isLive && s.roundPoints > 0 && (

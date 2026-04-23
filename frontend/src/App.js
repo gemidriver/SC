@@ -38,9 +38,8 @@ export const TEAM_STRUCTURE = [
 
 /** Returns true when a player's game has started or finished (lock them in). */
 export function isPlayerLocked(player) {
-  const status = player?.played_status?.display;
-  // Only lock while the game is actively in progress
-  return status === 'Playing';
+  // Lock when played_status.status === 'now' (game in progress)
+  return player?.played_status?.status === 'now';
 }
 
 export function getPrimaryPos(p) {
@@ -52,10 +51,18 @@ export function getPrimaryPos(p) {
 
 export function getStats(p) {
   const s = p.player_stats && p.player_stats[0];
-  // livepts = in-game live score; points = completed round score
-  const live   = s ? (s.livepts  || 0) : 0;
-  const round  = s ? (s.points   || 0) : 0;
-  const isLive = s ? ((s.livegames || 0) > 0) : false;
+  const playedStatus = p.played_status?.status || 'pre';
+  // livepts = live in-game accumulating score (only >0 while status='now')
+  // points  = last completed round score (NOT current round until game ends)
+  // roundPoints = current round 7 contribution:
+  //   'now'  → livepts (actively scoring)
+  //   'pre'  → 0 (hasn't played this round yet)
+  //   other  → points (game completed this round, points updated to current round)
+  const live  = s ? (s.livepts || 0) : 0;
+  const round = playedStatus === 'now' ? live
+              : playedStatus !== 'pre' ? (s ? (s.points || 0) : 0)
+              : 0;
+  const isLive = playedStatus === 'now';
   return {
     avg: s ? Math.round(s.avg || 0) : 0,
     avg3: s ? Math.round(s.avg3 || 0) : 0,
@@ -68,6 +75,7 @@ export function getStats(p) {
     roundPoints: round,      // alias for clarity
     livePoints: live,        // in-game live score (0 when not playing)
     isLive,                  // true while game is in progress
+    currentRound: s ? (s.round || 0) : 0,
     owned: s ? (s.owned || 0) : 0,
     breakeven: s ? (s.ppts || 0) : 0,
     mvpValue: s ? Math.round(s.mvp_value || 0) : 0,
@@ -316,18 +324,24 @@ export default function App() {
   const filledCount = myTeam.filter(Boolean).length;
 
   // Round scoring totals for the header stat bar
-  const { roundTotal, hasLive } = useMemo(() => {
+  const { roundTotal, hasLive, roundNum, playedCount } = useMemo(() => {
     let total = 0;
     let live = false;
-    myTeam.slice(0, 14).forEach(p => {
+    let played = 0;
+    let round = 0;
+    myTeam.forEach((p, i) => {
       if (!p) return;
       const s = getStats(p);
-      const pts = s.isLive ? s.livePoints : s.roundPoints;
-      const mult = p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1;
+      const pts = s.roundPoints;
+      // Captain/VC multipliers only apply to starters (indices 0–13)
+      const isStarter = i < 14;
+      const mult = isStarter ? (p.id === captainId ? 2 : p.id === vcId ? 1.5 : 1) : 1;
       total += pts * mult;
       if (s.isLive) live = true;
+      if (pts > 0) played++;
+      if (s.currentRound > round) round = s.currentRound;
     });
-    return { roundTotal: Math.round(total), hasLive: live };
+    return { roundTotal: Math.round(total), hasLive: live, roundNum: round || '', playedCount: played };
   }, [myTeam, captainId, vcId]);
 
   const handleLogin = useCallback((currentUser) => {
@@ -403,6 +417,8 @@ export default function App() {
         budget={BUDGET}
         roundTotal={roundTotal}
         hasLive={hasLive}
+        roundNum={roundNum}
+        playedCount={playedCount}
         user={user}
         activeView={activeTab}
         onNavigate={handleNavigate}

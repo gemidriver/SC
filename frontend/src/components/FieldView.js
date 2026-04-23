@@ -45,8 +45,8 @@ function PlayerToken({ player, slot, captainId, vcId, isSelected, isPendingSwap,
   const color = POS_COLORS[pos] || '#484f58';
   const isCap = player.id === captainId;
   const isVC  = player.id === vcId;
-  // Show live score if game in progress, otherwise completed round score
-  const displayPts = s.isLive ? s.livePoints : s.roundPoints;
+  // Always show roundPoints (s.points) — isLive only controls colour/dot
+  const displayPts = s.roundPoints;
   const multipliedPts = isCap ? Math.round(displayPts * 2) : isVC ? Math.round(displayPts * 1.5) : displayPts;
 
   return (
