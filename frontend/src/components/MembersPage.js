@@ -103,7 +103,7 @@ export default function MembersPage({ currentUser }) {
                 </div>
                 <div className="mc-identity">
                   <div className="mc-name">
-                    {m.display_name}
+                    <span className="mc-name-text">{m.display_name}</span>
                     {isMe && <span className="mc-you">You</span>}
                   </div>
                   <div className="mc-username">@{m.username}</div>
